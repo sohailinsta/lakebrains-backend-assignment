@@ -49,6 +49,7 @@ app.post('/signup', async (req, res) => {
       password: hashedPassword,
     });
 
+    // save the credentials to the Lakebrains database
     await newUser.save();
 
     res.status(201).json({ message: 'User created successfully' });
@@ -58,6 +59,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+// Define the login route
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -77,14 +79,9 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Authentication failed' });
     }
 
-    // if (password != user.password) {
-    //   return res.status(401).json({ message: 'Authentication failed' });
-    // }
-
     // Generate a JWT and send it as a response
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
     res.status(200).json({ token });
-
 
   } catch (err) {
     console.error(err);
@@ -92,15 +89,17 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Define the user route
 app.get('/user', (req, res) => {
   const token = req.headers.authorization.split(' ')[1];
   // Verify the token
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
+      // if token is not same as generated before return the below error
       return res.status(401).json({ message: 'Invalid token' });
     }
 
-    // Return the user email and password
+    // if token is matched Return the user email and password
     const email = req.body.email;
     const password = req.body.password;
     res.json({ email: email, password: password });
